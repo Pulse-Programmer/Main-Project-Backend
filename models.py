@@ -20,6 +20,7 @@ class Admin(db.Model, SerializerMixin):
     def __repr__(self):
         return f"<Admin(id={self.id}, user_id={self.user_id})>"
 
+
 class Jobseeker(db.Model, SerializerMixin):
     __tablename__ = 'jobseekers'
     id = db.Column(db.Integer, primary_key=True)
@@ -52,6 +53,7 @@ class Jobseeker(db.Model, SerializerMixin):
     def __repr__(self):
         return f"<Jobseeker(id={self.id}, user_id={self.user_id})>"
 
+
 class Employer(db.Model, SerializerMixin):
     __tablename__ = 'employers'
     
@@ -81,6 +83,23 @@ class Employer(db.Model, SerializerMixin):
 
     def __repr__(self):
         return f"<Employer(id={self.id}, user_id={self.user_id})>"
+    
+class ContactRequest(db.Model, SerializerMixin):
+    __tablename__ = 'contactrequests'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    employer_id = db.Column(db.Integer, db.ForeignKey('employers.id'))
+    jobseeker_id = db.Column(db.Integer, db.ForeignKey('jobseekers.id'))
+    message = db.Column(db.String)
+    status = db.Column(db.String)
+    created_at = db.Column(db.DateTime)
+    
+    #relationships
+    employer = db.relationship('Employer', back_populates='contact_requests')
+    jobseeker = db.relationship('Jobseeker', back_populates='contact_requests')
+
+    def __repr__(self):
+        return f"<ContactRequest(id={self.id}, employer_id={self.employer_id}, jobseeker_id={self.jobseeker_id})>"
 
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
@@ -120,22 +139,7 @@ class User(db.Model, SerializerMixin):
     def authenticate(self, password):
         return bcrypt.check_password_hash(self._password_hash, password.encode('utf-8'))
 
-class ContactRequest(db.Model, SerializerMixin):
-    __tablename__ = 'contactrequests'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    employer_id = db.Column(db.Integer, db.ForeignKey('employers.id'))
-    jobseeker_id = db.Column(db.Integer, db.ForeignKey('jobseekers.id'))
-    message = db.Column(db.String)
-    status = db.Column(db.String)
-    created_at = db.Column(db.DateTime)
-    
-    #relationships
-    employer = db.relationship('Employer', back_populates='contact_requests')
-    jobseeker = db.relationship('Jobseeker', back_populates='contact_requests')
 
-    def __repr__(self):
-        return f"<ContactRequest(id={self.id}, employer_id={self.employer_id}, jobseeker_id={self.jobseeker_id})>"
 
 class Payment(db.Model, SerializerMixin):
     __tablename__ = 'payments'
