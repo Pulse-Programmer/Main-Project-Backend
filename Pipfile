@@ -4,14 +4,24 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+ipdb = "0.13.9"
 flask = "*"
-flask-sqlalchemy = "*"
+flask-sqlalchemy = "3.0.3"
 flask-migrate = "*"
 sqlalchemy-serializer = "*"
+faker = "*"
 flask-cors = "*"
 gunicorn = "*"
+Werkzeug = "2.2.2"
+flask-restful = "*"
+importlib-metadata = "6.0.0"
+importlib-resources = "5.10.0"
+python-dotenv = "*"
+pytest = "7.2.0"
+flask-bcrypt = "*"
+psycopg2-binary = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.11"
+python_version = "3.8.13"
