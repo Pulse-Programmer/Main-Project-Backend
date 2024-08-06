@@ -1,5 +1,6 @@
 # Standard library imports
-
+from dotenv import load_dotenv
+import os
 # Remote library imports
 from flask import Flask
 from flask_cors import CORS
@@ -9,10 +10,15 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from flask_bcrypt import Bcrypt
 
+# Load environment variables
+load_dotenv()
 
+app = Flask(__name__,
+    static_url_path='',
+    static_folder='../client/build',
+    template_folder='../client/build')
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://dine_mate_3hmx_user:ZdJtURJw7t35cd1sdssy6tCcJ39xKNy1@dpg-cq9dlrbv2p9s73ci1380-a.oregon-postgres.render.com/dine_mate_3hmx'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URI')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = b'Y\xf1Xz\x00\xad|eQ\x80t \xca\x1a\x10K'
 app.json.compact = False
