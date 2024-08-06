@@ -1,11 +1,11 @@
 # Remote library imports
 from flask import request, make_response, jsonify, session, render_template
 from flask_restful import Resource
-
+from models import User, Jobseeker, Employer, ContactRequest, Payment, Fileupload, JobCategory
 # Local imports
 from config import app, db, api
 # Model imports
-from models import User, Jobseeker, Employer, ContactRequest, Payment, Fileupload, JobCategory
+
 
 
 class Jobseekers(Resource):
