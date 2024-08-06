@@ -25,7 +25,7 @@ class Jobseeker(db.Model, SerializerMixin):
     __tablename__ = 'jobseekers'
     id = db.Column(db.Integer, primary_key=True)
     prof_pic = db.Column(db.String)
-    fileupload_id = db.Column(db.Integer, db.ForeignKey('fileuploads.id'))
+    # fileupload_id = db.Column(db.Integer, db.ForeignKey('fileuploads.id'))
     bio = db.Column(db.String)
     availability = db.Column(db.Boolean)
     job_category_id = db.Column(db.Integer, db.ForeignKey('jobcategories.id'))
