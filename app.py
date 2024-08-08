@@ -10,6 +10,15 @@ from config import app, db, api
 
 class Jobseekers(Resource):
     def get(self):
+        #Swagger annotations
+        '''This is an endpoint that gets all jobseekers
+        ---
+        tags:
+          - Jobseekers
+        responses:
+          200:
+            description: Returns all jobseekers
+        '''
         if not session.get('user_id'):
             return make_response({"message":"Unauthorized"}, 401)
         if session['role']=='employer' or session['role']=='admin':
@@ -23,6 +32,22 @@ class Jobseekers(Resource):
             return make_response({"message":"You don't have access!"}, 401)
         
     def post(self):
+        #Swagger annotations
+        '''This is an endpoint that creates a new jobseeker
+        ---
+        tags:
+          - Jobseekers
+        parameters:
+          - name: jobseeker
+            in: body
+            description: Jobseeker details
+            schema:
+              $ref: '#/definitions/Jobseeker'
+        responses:
+          201:
+            description: Returns the created jobseeker
+        '''
+    
         data = request.get_json()
         new_jobseeker = Jobseeker(**data)
         db.session.add(new_jobseeker)
@@ -31,6 +56,21 @@ class Jobseekers(Resource):
     
 class JobseekerById(Resource):
     def get(self, id):
+        #Swagger annotations
+        '''This is an endpoint that gets a jobseeker by ID
+        ---
+        tags:
+          - Jobseekers
+        parameters:
+          - name: id
+            in: path
+            description: Jobseeker ID
+            required: true
+            type: integer
+        responses:
+          200:
+            description: Returns the jobseeker
+        '''
         if not session.get('user_id'):
             return make_response({"message":"Unauthorized"}, 401)
         jobseeker = Jobseeker.query.filter_by(id=id).first()
@@ -39,6 +79,26 @@ class JobseekerById(Resource):
         return make_response(jobseeker.to_dict(), 200)
     
     def patch(self, id):
+        #Swagger annotations
+        '''This is an endpoint that updates a jobseeker by ID
+        ---
+        tags:
+          - Jobseekers
+        parameters:
+          - name: id
+            in: path
+            description: Jobseeker ID
+            required: true
+            type: integer
+          - name: jobseeker
+            in: body
+            description: Jobseeker details
+            schema:
+              $ref: '#/definitions/Jobseeker'
+        responses:
+          200:
+            description: Returns the updated jobseeker
+        '''
         data = request.get_json()
         jobseeker = Jobseeker.query.filter_by(id=id).first()
         
@@ -54,6 +114,21 @@ class JobseekerById(Resource):
         return make_response(jobseeker.to_dict(), 200)
     
     def delete(self, id):
+        #Swagger annotations
+        '''This is an endpoint that deletes a jobseeker by ID
+        ---
+        tags:
+          - Jobseekers
+        parameters:
+          - name: id
+            in: path
+            description: Jobseeker ID
+            required: true
+            type: integer
+        responses:
+          204:
+            description: Returns nothing
+        '''
         jobseeker = Jobseeker.query.filter_by(id=id).first()
         
         if not jobseeker:
@@ -70,12 +145,36 @@ api.add_resource(JobseekerById, '/jobseekers/<int:id>', endpoint='jobseeker_by_i
 
 class Employers(Resource):
     def get(self):
+        #Swagger annotations
+        '''This is an endpoint that gets all employers
+        ---
+        tags:
+          - Employers
+        responses:
+          200:
+            description: Returns all employers
+        '''
         if not session.get('user_id') or not session['role']=='admin':
             return make_response({"message":"Unauthorized"}, 401)
         employers = Employer.query.all()
         return make_response([employer.to_dict() for employer in employers], 200)
     
     def post(self):
+        #Swagger annotations
+        '''This is an endpoint that creates a new employer
+        ---
+        tags:
+          - Employers
+        parameters:
+          - name: employer
+            in: body
+            description: Employer details
+            schema:
+              $ref: '#/definitions/Employer'
+        responses:
+          201:
+            description: Returns the created employer
+        '''
         data = request.get_json()
         new_employer = Employer(**data)
         db.session.add(new_employer)
@@ -86,6 +185,21 @@ api.add_resource(Employers, '/employers', endpoint='employers')
     
 class EmployerById(Resource):
     def get(self, id):
+        #Swagger annotations
+        '''This is an endpoint that gets an employer by ID
+        ---
+        tags:
+          - Employers
+        parameters:
+          - name: id
+            in: path
+            description: Employer ID
+            required: true
+            type: integer
+        responses:
+          200:
+            description: Returns the employer
+        '''
         if not session.get('user_id') or not session['role']=='admin':
             return make_response({"message":"Unauthorized"}, 401)
         employer = Employer.query.filter_by(id=id).first()
@@ -94,6 +208,26 @@ class EmployerById(Resource):
         return make_response(employer.to_dict(), 200)
     
     def patch(self, id):
+        #Swagger annotations
+        '''This is an endpoint that updates an employer by ID
+        ---
+        tags:
+          - Employers
+        parameters:
+          - name: id
+            in: path
+            description: Employer ID
+            required: true
+            type: integer
+          - name: employer
+            in: body
+            description: Employer details
+            schema:
+              $ref: '#/definitions/Employer'
+        responses:
+          200:
+            description: Returns the updated employer
+        '''
         data = request.get_json()
         employer = Employer.query.filter_by(id=id).first()
         
@@ -109,6 +243,21 @@ class EmployerById(Resource):
         return make_response(employer.to_dict(), 200)
     
     def delete(self, id):
+        #Swagger annotations
+        '''This is an endpoint that deletes an employer by ID
+        ---
+        tags:
+          - Employers
+        parameters:
+          - name: id
+            in: path
+            description: Employer ID
+            required: true
+            type: integer
+        responses:
+          200:
+            description: Returns nothing
+        '''
         employer = Employer.query.filter_by(id=id).first()
         
         if not employer:
@@ -120,6 +269,183 @@ class EmployerById(Resource):
         return make_response({"message":"Employer deleted"}, 200)
     
 api.add_resource(EmployerById, '/employers/<int:id>', endpoint='employer_by_id')
+
+class Payments(Resource):
+    def get(self):
+        #Swagger annotations
+        '''This is an endpoint that gets all payments
+        ---
+        tags:
+          - Payments
+        responses:
+          200:
+            description: Returns all payments
+        '''
+        if not session.get('user_id') or not session['role']=='admin':
+            return make_response({"message":"Unauthorized"}, 401)
+        payments = Payment.query.all()
+        return make_response([payment.to_dict() for payment in payments], 200)
+    
+    def post(self):
+        #Swagger annotations
+        '''This is an endpoint that creates a new payment
+        ---
+        tags:
+          - Payments
+        parameters:
+          - name: payment
+            in: body
+            description: Payment details
+            schema:
+              $ref: '#/definitions/Payment'
+        responses:
+          201:
+            description: Returns the created payment
+        '''
+        data = request.get_json()
+        new_payment = Payment(**data)
+        db.session.add(new_payment)
+        db.session.commit()
+        return make_response(new_payment.to_dict(), 201)
+    
+api.add_resource(Payments, "/payments", endpoint='payments')
+
+class ContactRequests(Resource):
+    def get(self):
+        #Swagger annotations
+        '''This is an endpoint that gets all contact requests
+        ---
+        tags:
+          - Contact Requests
+        responses:
+          200:
+            description: Returns all contact requests
+        '''
+        if not session.get('user_id') or not session['role']=='admin':
+            return make_response({"message":"Unauthorized"}, 401)
+        contact_requests = ContactRequest.query.all()
+        return make_response([contact_request.to_dict() for contact_request in contact_requests], 200)
+    
+    def post(self):
+        #Swagger annotations
+        '''This is an endpoint that creates a new contact request
+        ---
+        tags:
+          - Contact Requests
+        parameters:
+          - name: contact_request
+            in: body
+            description: Contact request details
+            schema:
+              $ref: '#/definitions/ContactRequest'
+        responses:
+          201:
+            description: Returns the created contact request
+        '''
+        data = request.get_json()
+        jobseeker = Jobseeker.query.filter_by(id=data['jobseekerID']).first()
+        employer = Employer.query.filter_by(id=data.get('user_id')).first()
+        new_contact_request = ContactRequest(jobseeker=jobseeker, employer=employer, message=data['message'], status=data['status'], created_at=['date'])
+        db.session.add(new_contact_request)
+        db.session.commit()
+        return make_response(new_contact_request.to_dict(), 201)
+
+
+api.add_resource(ContactRequests, "/contact_requests", endpoint='contact_requests')
+
+class ContactRequestById(Resource):
+    def get(self, id):
+        #Swagger annotations
+        '''This is an endpoint that gets a contact request by ID
+        ---
+        tags:
+          - Contact Requests
+        parameters:
+          - name: id
+            in: path
+            description: Contact request ID
+            required: true
+            type: integer
+        responses:
+          200:
+            description: Returns the contact request
+        '''
+        if not session.get('user_id'):
+            return make_response({"message":"Unauthorized"}, 401)
+        contact_request = ContactRequest.query.filter_by(id=id).first()
+        if not contact_request:
+            return make_response({"message":"Contact request not found"}, 404)
+        return make_response(contact_request.to_dict(), 200)
+    
+    def patch(self, id):
+        #Swagger annotations
+        '''This is an endpoint that updates a contact request by ID
+        ---
+        tags:
+          - Contact Requests
+        parameters:
+          - name: id
+            in: path
+            description: Contact request ID
+            required: true
+            type: integer
+          - name: contact_request
+            in: body
+            description: Contact request details
+            schema:
+              $ref: '#/definitions/ContactRequest'
+        responses:
+          200:
+            description: Returns the updated contact request
+        '''
+        if not session.get('user_id'):
+            return make_response({"message":"Unauthorized"}, 401)
+        
+        data = request.get_json()
+        contact_request = ContactRequest.query.filter_by(id=id).first()
+        
+        if not contact_request:
+            return make_response({"message":"Contact request not found"}, 404)
+        
+        for attr in data:
+            setattr(contact_request, attr, data[attr])
+        
+        db.session.add(contact_request)
+        db.session.commit()
+        
+        return make_response(contact_request.to_dict(), 200)
+    
+    def delete(self, id):
+        #Swagger annotations
+        '''This is an endpoint that deletes a contact request by ID
+        ---
+        tags:
+          - Contact Requests
+        parameters:
+          - name: id
+            in: path
+            description: Contact request ID
+            required: true
+            type: integer
+        responses:
+          200:
+            description: Returns nothing
+        '''
+        if not session.get('user_id'):
+            return make_response({"message":"Unauthorized"}, 401)
+        
+        contact_request = ContactRequest.query.filter_by(id=id).first()
+        
+        if not contact_request:
+            return make_response({"message":"Contact request not found"}, 404)
+        
+        db.session.delete(contact_request)
+        db.session.commit()
+        
+        return make_response({"message":"Contact request deleted"}, 200)
+
+
+api.add_resource(ContactRequestById, '/contact_requests/<int:id>', endpoint='contact_request_by_id')
 
 class Signup(Resource):
     def post(self):
