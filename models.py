@@ -1,11 +1,11 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy_serializer import SerializerMixin
-from sqlalchemy import MetaData
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.associationproxy import association_proxy
-
+from flask_bcrypt import Bcrypt
 from config import db, bcrypt
+
 
 class Admin(db.Model, SerializerMixin):
     __tablename__ = 'admins'
@@ -161,7 +161,7 @@ class Fileupload(db.Model, SerializerMixin):
     
     id = db.Column(db.Integer, primary_key=True)
     jobseeker_id = db.Column(db.Integer, db.ForeignKey('jobseekers.id'))
-    file_path = db.Column(db.String)
+    file_name = db.Column(db.String)
     file_type = db.Column(db.String)
     uploaded_at = db.Column(db.DateTime)
     
@@ -169,8 +169,8 @@ class Fileupload(db.Model, SerializerMixin):
     jobseeker = db.relationship('Jobseeker', back_populates='fileuploads')
 
     def __repr__(self):
-        return f"<Fileupload(id={self.id}, jobseeker_id={self.jobseeker_id}, file_path='{self.file_path}')>"
-
+        return f"<Fileupload(id={self.id}, jobseeker_id={self.jobseeker_id}, file_path='{self.file_name}')>"
+   
 class JobCategory(db.Model, SerializerMixin):
     __tablename__ = 'jobcategories'
     

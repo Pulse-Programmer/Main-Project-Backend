@@ -5,9 +5,22 @@ from models import User, Jobseeker, Employer, ContactRequest, Payment, Fileuploa
 # Local imports
 from config import app, db, api
 # Model imports
+# from flask_swagger_ui import get_swaggerui_blueprint
 
 
+# # Swagger setup
+# SWAGGER_URL = '/swagger'
+# API_URL = '/static/swagger.json'  # URL for the Swagger JSON file
 
+# swaggerui_blueprint = get_swaggerui_blueprint(
+#     SWAGGER_URL,
+#     API_URL,
+#     config={
+#         'app_name': "Job Portal API"
+#     }
+# )
+
+# app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
 class Jobseekers(Resource):
     def get(self):
         if not session.get('user_id'):

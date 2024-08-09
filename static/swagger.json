@@ -1,0 +1,354 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Job Portal API",
+    "description": "API documentation for the Job Portal",
+    "version": "1.0.0"
+  },
+  "host": "localhost:5555",
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/jobseekers": {
+      "get": {
+        "summary": "Get all jobseekers",
+        "responses": {
+          "200": {
+            "description": "A list of jobseekers"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new jobseeker",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Jobseeker"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Jobseeker created"
+          }
+        }
+      }
+    },
+    "/jobseekers/{id}": {
+      "get": {
+        "summary": "Get a jobseeker by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Jobseeker details"
+          },
+          "404": {
+            "description": "Jobseeker not found"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update a jobseeker by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Jobseeker"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Jobseeker updated"
+          },
+          "404": {
+            "description": "Jobseeker not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a jobseeker by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Jobseeker deleted"
+          },
+          "404": {
+            "description": "Jobseeker not found"
+          }
+        }
+      }
+    },
+    "/employers": {
+      "get": {
+        "summary": "Get all employers",
+        "responses": {
+          "200": {
+            "description": "A list of employers",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Employer"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new employer",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Employer"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Employer created",
+            "schema": {
+              "$ref": "#/definitions/Employer"
+            }
+          }
+        }
+      }
+    },
+    "/employers/{id}": {
+      "get": {
+        "summary": "Get an employer by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Employer details",
+            "schema": {
+              "$ref": "#/definitions/Employer"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Employer not found"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update an employer by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Employer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Employer updated",
+            "schema": {
+              "$ref": "#/definitions/Employer"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Employer not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete an employer by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Employer deleted"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Employer not found"
+          }
+        }
+      }
+    },
+    "/signup": {
+      "post": {
+        "summary": "Create a new user",
+        "description": "Endpoint to create a new user with the specified details.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UserInput"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "User created",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "400": {
+            "description": "Missing required fields"
+          }
+        }
+      }
+    },
+    "/checksession": {
+      "get": {
+        "summary": "Check session status",
+        "description": "Endpoint to check the current user session status and retrieve user details if authenticated.",
+        "responses": {
+          "200": {
+            "description": "User details",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Jobseeker": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      }
+    },
+    "Employer": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "company_name": {
+          "type": "string"
+        }
+      }
+    },
+    "UserInput": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "example": "johndoe"
+        },
+        "email": {
+          "type": "string",
+          "example": "johndoe@example.com"
+        },
+        "phone_number": {
+          "type": "string",
+          "example": "123-456-7890"
+        },
+        "password": {
+          "type": "string",
+          "example": "password123"
+        },
+        "role": {
+          "type": "string",
+          "example": "jobseeker"
+        }
+      },
+      "required": ["email", "password", "role"]
+    },
+    "User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "username": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "phone_number": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
