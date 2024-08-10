@@ -270,6 +270,23 @@ class EmployerById(Resource):
     
 api.add_resource(EmployerById, '/employers/<int:id>', endpoint='employer_by_id')
 
+class Users(Resource):
+    def get(self):
+        #Swagger annotations
+        '''This is an endpoint that gets all users
+        ---
+        tags:
+          - Users
+        responses:
+          200:
+            description: Returns all users
+        '''
+        if not session.get('user_id') or not session['role']=='admin':
+            return make_response({"message":"Unauthorized"}, 401)
+        users = User.query.all()
+        return make_response([user.to_dict() for user in users], 200)
+    
+
 class Payments(Resource):
     def get(self):
         #Swagger annotations
