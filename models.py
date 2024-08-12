@@ -29,10 +29,11 @@ class Jobseeker(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     prof_pic = db.Column(db.String)
     # fileupload_id = db.Column(db.Integer, db.ForeignKey('fileuploads.id'))
-    resume_file = db.Column(db.String)
+    resume_file = db.Column(db.String, nullable=True)
     bio = db.Column(db.String)
     availability = db.Column(db.Boolean)
-    job_category_id = db.Column(db.Integer, db.ForeignKey('jobcategories.id'))
+    # job_category_id = db.Column(db.Integer, db.ForeignKey('jobcategories.id'))
+    job_category = db.Column(db.String)
     salary_expectation = db.Column(db.Float)
     verification_status = db.Column(db.Boolean, default=False)
     work_experience = db.Column(db.Text)
@@ -47,7 +48,7 @@ class Jobseeker(db.Model, SerializerMixin):
     fileuploads = db.relationship('Fileupload', back_populates='jobseeker', cascade='all, delete-orphan')
     contact_requests = db.relationship('ContactRequest', back_populates='jobseeker', cascade='all, delete-orphan')
 
-    job_category = db.relationship('JobCategory', back_populates='jobseekers')
+    # job_category = db.relationship('JobCategory', back_populates='jobseekers')
     # Association proxy to get employers for this jobseeker through ContactRequest
     employers = association_proxy('contact_requests', 'employer', creator=lambda employer_obj: ContactRequest(employer=employer_obj))
     
