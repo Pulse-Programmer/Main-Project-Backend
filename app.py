@@ -74,7 +74,7 @@ class JobseekerById(Resource):
         '''
         if not session.get('user_id'):
             return make_response({"message":"Unauthorized"}, 401)
-        jobseeker = Jobseeker.query.filter_by(id=id).first()
+        jobseeker = Jobseeker.query.filter(Jobseeker.user_id == id).first()
         if not jobseeker:
             return make_response({"message":"Jobseeker not found"}, 404)
         return make_response(jobseeker.to_dict(), 200)
@@ -101,7 +101,7 @@ class JobseekerById(Resource):
             description: Returns the updated jobseeker
         '''
         data = request.get_json()
-        jobseeker = Jobseeker.query.filter_by(user_id=id).first()
+        jobseeker = Jobseeker.query.filter(Jobseeker.user_id == id).first()
         
         if not jobseeker:
             return make_response({"message":"Jobseeker not found"}, 404)
@@ -130,7 +130,7 @@ class JobseekerById(Resource):
           204:
             description: Returns nothing
         '''
-        jobseeker = Jobseeker.query.filter_by(id=id).first()
+        jobseeker = Jobseeker.query.filter(Jobseeker.user_id == id).first()
         
         if not jobseeker:
             return make_response({"message":"Jobseeker not found"}, 404)
@@ -288,6 +288,97 @@ class Users(Resource):
         users = User.query.all()
         return make_response([user.to_dict() for user in users], 200)
     
+class UsersById(Resource):
+    def get(self, id):
+        #Swagger annotations
+        '''This is an endpoint that gets a user by ID
+        ---
+        tags:
+          - Users
+        parameters:
+          - name: id
+            in: path
+            description: User ID
+            required: true
+            type: integer
+        responses:
+          200:
+            description: Returns the user
+        '''
+        if not session.get('user_id'):
+            return make_response({"message":"Unauthorized"}, 401)
+        user = User.query.filter_by(id=id).first()
+        if not user:
+            return make_response({"message":"User not found"}, 404)
+        return make_response(user.to_dict(), 200)
+    
+    def patch(self, id):
+        #Swagger annotations
+        '''This is an endpoint that updates a user by ID
+        ---
+        tags:
+          - Users
+        parameters:
+          - name: id
+            in: path
+            description: User ID
+            required: true
+            type: integer
+          - name: user
+            in: body
+            description: User details
+            schema:
+              $ref: '#/definitions/User'
+        responses:
+          200:
+            description: Returns the updated user
+        '''
+        if not session.get('user_id'):
+            return make_response({"message":"Unauthorized"}, 401)
+        data = request.get_json()
+        user = User.query.filter_by(id=id).first()
+        
+        if not user:
+            return make_response({"message":"User not found"}, 404)
+        
+        for attr in data:
+            setattr(user, attr, data.get(attr))
+        
+        db.session.add(user)
+        db.session.commit()
+        
+        return make_response(user.to_dict(), 200)
+    
+    def delete(self, id):
+        #Swagger annotations
+        '''This is an endpoint that deletes a user by ID
+        ---
+        tags:
+          - Users
+        parameters:
+          - name: id
+            in: path
+            description: User ID
+            required: true
+            type: integer
+        responses:
+          200:
+            description: Returns nothing
+        '''
+        if not session.get('user_id'):
+            return make_response({"message":"Unauthorized"}, 401)
+        user = User.query.filter_by(id=id).first()
+        
+        if not user:
+            return make_response({"message":"User not found"}, 404)
+        
+        db.session.delete(user)
+        db.session.commit()
+        
+        return make_response({"message":"User deleted"}, 200)
+
+api.add_resource(Users, '/users', endpoint='users')
+api.add_resource(UsersById, '/users/<int:id>', endpoint='user_by_id')
 
 class Payments(Resource):
     def get(self):
