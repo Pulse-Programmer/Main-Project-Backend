@@ -23,7 +23,7 @@ class Jobseekers(Resource):
             return make_response({"message":"Unauthorized"}, 401)
         if session['role']=='employer' or session['role']=='admin':
             if session['role']=='employer':
-                employer = Employer.query.get(session['user_id'])
+                employer = Employer.query.filter(Employer.user_id == session['user_id']).first()
                 if not employer.pay_to_view:
                     return make_response({"message": "Pay fee to have access!"}, 401)
             jobseekers = Jobseeker.query.all()
@@ -50,6 +50,7 @@ class Jobseekers(Resource):
     
         data = request.get_json()
         new_jobseeker = Jobseeker(**data)
+        new_jobseeker.user_id = session['user_id']
         db.session.add(new_jobseeker)
         db.session.commit()
         return make_response(new_jobseeker.to_dict(), 201)
@@ -100,7 +101,7 @@ class JobseekerById(Resource):
             description: Returns the updated jobseeker
         '''
         data = request.get_json()
-        jobseeker = Jobseeker.query.filter_by(id=id).first()
+        jobseeker = Jobseeker.query.filter_by(user_id=id).first()
         
         if not jobseeker:
             return make_response({"message":"Jobseeker not found"}, 404)
@@ -177,6 +178,7 @@ class Employers(Resource):
         '''
         data = request.get_json()
         new_employer = Employer(**data)
+        new_employer.user_id = session['user_id']
         db.session.add(new_employer)
         db.session.commit()
         return make_response(new_employer.to_dict(), 201)
@@ -200,9 +202,9 @@ class EmployerById(Resource):
           200:
             description: Returns the employer
         '''
-        if not session.get('user_id') or not session['role']=='admin':
+        if not session.get('user_id'):
             return make_response({"message":"Unauthorized"}, 401)
-        employer = Employer.query.filter_by(id=id).first()
+        employer = Employer.query.filter(Employer.user_id==id).first()
         if not employer:
             return make_response({"message":"Employer not found"}, 404)
         return make_response(employer.to_dict(), 200)
@@ -229,7 +231,7 @@ class EmployerById(Resource):
             description: Returns the updated employer
         '''
         data = request.get_json()
-        employer = Employer.query.filter_by(id=id).first()
+        employer = Employer.query.filter(Employer.user_id==id).first()
         
         if not employer:
             return make_response({"message":"Employer not found"}, 404)
@@ -298,7 +300,7 @@ class Payments(Resource):
           200:
             description: Returns all payments
         '''
-        if not session.get('user_id') or not session['role']=='admin':
+        if not session.get('user_id'): #or not session['role']=='admin'
             return make_response({"message":"Unauthorized"}, 401)
         payments = Payment.query.all()
         return make_response([payment.to_dict() for payment in payments], 200)
@@ -321,6 +323,11 @@ class Payments(Resource):
         '''
         data = request.get_json()
         new_payment = Payment(**data)
+        employer = Employer.query.filter(Employer.user_id==session.get('user_id')).first()
+        new_payment.employer_id = employer.id
+        new_payment.status = True
+        employer.pay_to_view = True
+        
         db.session.add(new_payment)
         db.session.commit()
         return make_response(new_payment.to_dict(), 201)
@@ -482,6 +489,7 @@ class Signup(Resource):
         
         if user.role == 'admin':
             user.verified = True
+            
         
         db.session.add(user)
         db.session.commit()
