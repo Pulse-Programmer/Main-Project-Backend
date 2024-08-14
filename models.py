@@ -176,7 +176,7 @@ class Payment(db.Model, SerializerMixin):
     employer = db.relationship('Employer', back_populates='payments')
 
     #serialize rules
-    serialize_rules = ("-employer.payments")
+    serialize_rules = ("-employer.payments",)
     def __repr__(self):
         return f"<Payment(id={self.id}, employer_id={self.employer_id}, amount={self.amount})>"
 
@@ -193,7 +193,7 @@ class Fileupload(db.Model, SerializerMixin):
     jobseeker = db.relationship('Jobseeker', back_populates='fileuploads')
 
     #serialize rules
-    serialize_rules = ("-jobseeker.fileuploads")
+    serialize_rules = ("-jobseeker.fileuploads",)
 
     def __repr__(self):
         return f"<Fileupload(id={self.id}, jobseeker_id={self.jobseeker_id}, file_path='{self.file_path}')>"
@@ -204,10 +204,10 @@ class JobCategory(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     category_name = db.Column(db.String)
     
-    jobseekers = db.relationship('Jobseeker', back_populates='job_category', cascade='all, delete-orphan')
+    # jobseekers = db.relationship('Jobseeker', back_populates='job_category', cascade='all, delete-orphan')
     
     #serialize rules
-    serialize_rules = ("-jobseekers.job_category")
+    # serialize_rules = ("-jobseekers.job_category")
 
     def __repr__(self):
         return f"<JobCategory(id={self.id}, category_name='{self.category_name}')>"
