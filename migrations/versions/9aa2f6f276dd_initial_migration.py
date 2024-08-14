@@ -1,8 +1,8 @@
-"""Removes fileupload FK from jobseekers table
+"""initial migration
 
-Revision ID: 848e2ebaa0dd
+Revision ID: 9aa2f6f276dd
 Revises: 
-Create Date: 2024-08-06 22:56:45.738302
+Create Date: 2024-08-09 11:47:49.302057
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '848e2ebaa0dd'
+revision = '9aa2f6f276dd'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -59,6 +59,7 @@ def upgrade():
     op.create_table('jobseekers',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('prof_pic', sa.String(), nullable=True),
+    sa.Column('resume_file', sa.String(), nullable=True),
     sa.Column('bio', sa.String(), nullable=True),
     sa.Column('availability', sa.Boolean(), nullable=True),
     sa.Column('job_category_id', sa.Integer(), nullable=True),

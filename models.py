@@ -16,6 +16,9 @@ class Admin(db.Model, SerializerMixin):
     
     #one-to-one relationship with user
     user = db.relationship('User', back_populates='admin')
+    
+    #serialization rules
+    serialize_rules = ('-user.admin',)
 
     def __repr__(self):
         return f"<Admin(id={self.id}, user_id={self.user_id})>"
@@ -26,9 +29,11 @@ class Jobseeker(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     prof_pic = db.Column(db.String)
     # fileupload_id = db.Column(db.Integer, db.ForeignKey('fileuploads.id'))
+    resume_file = db.Column(db.String, nullable=True)
     bio = db.Column(db.String)
     availability = db.Column(db.Boolean)
-    job_category_id = db.Column(db.Integer, db.ForeignKey('jobcategories.id'))
+    # job_category_id = db.Column(db.Integer, db.ForeignKey('jobcategories.id'))
+    job_category = db.Column(db.String)
     salary_expectation = db.Column(db.Float)
     verification_status = db.Column(db.Boolean, default=False)
     work_experience = db.Column(db.Text)
@@ -43,12 +48,12 @@ class Jobseeker(db.Model, SerializerMixin):
     fileuploads = db.relationship('Fileupload', back_populates='jobseeker', cascade='all, delete-orphan')
     contact_requests = db.relationship('ContactRequest', back_populates='jobseeker', cascade='all, delete-orphan')
 
-    job_category = db.relationship('JobCategory', back_populates='jobseekers')
+    # job_category = db.relationship('JobCategory', back_populates='jobseekers')
     # Association proxy to get employers for this jobseeker through ContactRequest
     employers = association_proxy('contact_requests', 'employer', creator=lambda employer_obj: ContactRequest(employer=employer_obj))
     
     #serialization rules
-    serialize_rules = ("-fileuploads.jobseeker", "-contact_requests.jobseeker")
+    serialize_rules = ("-fileuploads.jobseeker", "-contact_requests.jobseeker", "-user.jobseeker", "-job_category.jobseekers")
 
     def __repr__(self):
         return f"<Jobseeker(id={self.id}, user_id={self.user_id})>"
@@ -79,7 +84,7 @@ class Employer(db.Model, SerializerMixin):
     jobseekers = association_proxy('contact_requests', 'jobseeker', creator=lambda jobseeker_obj: ContactRequest(jobseeker=jobseeker_obj))
 
     #serialization rules
-    serialize_rules = ("-contact_requests.employer", "-payments.employer")
+    serialize_rules = ("-contact_requests.employer", "-payments.employer", "-user.employer")
 
     def __repr__(self):
         return f"<Employer(id={self.id}, user_id={self.user_id})>"
@@ -92,11 +97,14 @@ class ContactRequest(db.Model, SerializerMixin):
     jobseeker_id = db.Column(db.Integer, db.ForeignKey('jobseekers.id'))
     message = db.Column(db.String)
     status = db.Column(db.String)
-    created_at = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     
     #relationships
     employer = db.relationship('Employer', back_populates='contact_requests')
     jobseeker = db.relationship('Jobseeker', back_populates='contact_requests')
+    
+    #serialize rules
+    serialize_rules = ("-employer.contact_requests", "-jobseeker.contact_requests")
 
     def __repr__(self):
         return f"<ContactRequest(id={self.id}, employer_id={self.employer_id}, jobseeker_id={self.jobseeker_id})>"
@@ -127,6 +135,20 @@ class User(db.Model, SerializerMixin):
     def __repr__(self):
         return f"<User(id={self.id}, username='{self.username}', email='{self.email}')>"
     
+    @validates('username')
+    def validate_username(self, key, username):
+        if not username:
+            raise ValueError('Username is required')
+        elif User.query.filter_by(username = username).first():
+            raise ValueError('Name must be unique')
+        return username
+    
+    @validates('email')
+    def validate_email(self, key, email):
+        if '@' not in email:
+            raise ValueError('Invalid Email format')
+        return email
+    
     @hybrid_property
     def password_hash(self):
         raise AttributeError("Password hashes may not be viewed.")
@@ -153,6 +175,8 @@ class Payment(db.Model, SerializerMixin):
     #relationship
     employer = db.relationship('Employer', back_populates='payments')
 
+    #serialize rules
+    serialize_rules = ("-employer.payments",)
     def __repr__(self):
         return f"<Payment(id={self.id}, employer_id={self.employer_id}, amount={self.amount})>"
 
@@ -168,6 +192,9 @@ class Fileupload(db.Model, SerializerMixin):
     #relationship
     jobseeker = db.relationship('Jobseeker', back_populates='fileuploads')
 
+    #serialize rules
+    serialize_rules = ("-jobseeker.fileuploads",)
+
     def __repr__(self):
         return f"<Fileupload(id={self.id}, jobseeker_id={self.jobseeker_id}, file_path='{self.file_path}')>"
 
@@ -177,7 +204,10 @@ class JobCategory(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     category_name = db.Column(db.String)
     
-    jobseekers = db.relationship('Jobseeker', back_populates='job_category', cascade='all, delete-orphan')
+    # jobseekers = db.relationship('Jobseeker', back_populates='job_category', cascade='all, delete-orphan')
+    
+    #serialize rules
+    # serialize_rules = ("-jobseekers.job_category")
 
     def __repr__(self):
         return f"<JobCategory(id={self.id}, category_name='{self.category_name}')>"
