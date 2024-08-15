@@ -487,7 +487,7 @@ class ContactRequestById(Resource):
         '''
         if not session.get('user_id'):
             return make_response({"message":"Unauthorized"}, 401)
-        contact_request = ContactRequest.query.filter_by(id=id).first()
+        contact_request = ContactRequest.query.filter_by(jobseeker_id=id).first()
         if not contact_request:
             return make_response({"message":"Contact request not found"}, 404)
         return make_response(contact_request.to_dict(), 200)
