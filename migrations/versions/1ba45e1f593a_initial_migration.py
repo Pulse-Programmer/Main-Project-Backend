@@ -1,8 +1,8 @@
-"""initial migration
+"""Initial migration
 
-Revision ID: 9aa2f6f276dd
+Revision ID: 1ba45e1f593a
 Revises: 
-Create Date: 2024-08-09 11:47:49.302057
+Create Date: 2024-08-17 22:23:20.530577
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '9aa2f6f276dd'
+revision = '1ba45e1f593a'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -59,17 +59,17 @@ def upgrade():
     op.create_table('jobseekers',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('prof_pic', sa.String(), nullable=True),
-    sa.Column('resume_file', sa.String(), nullable=True),
-    sa.Column('bio', sa.String(), nullable=True),
+    sa.Column('name', sa.String(length=255), nullable=True),
+    sa.Column('resume_file', sa.String(length=255), nullable=True),
+    sa.Column('bio', sa.Text(), nullable=True),
     sa.Column('availability', sa.Boolean(), nullable=True),
-    sa.Column('job_category_id', sa.Integer(), nullable=True),
+    sa.Column('job_category', sa.String(length=255), nullable=True),
     sa.Column('salary_expectation', sa.Float(), nullable=True),
     sa.Column('verification_status', sa.Boolean(), nullable=True),
     sa.Column('work_experience', sa.Text(), nullable=True),
     sa.Column('education', sa.Text(), nullable=True),
     sa.Column('skills', sa.Text(), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['job_category_id'], ['jobcategories.id'], name=op.f('fk_jobseekers_job_category_id_jobcategories')),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], name=op.f('fk_jobseekers_user_id_users')),
     sa.PrimaryKeyConstraint('id')
     )
