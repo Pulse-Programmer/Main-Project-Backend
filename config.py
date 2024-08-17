@@ -10,17 +10,41 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from flask_bcrypt import Bcrypt
 from flasgger import Swagger
+from flask_mail import Mail, Message
+# from sqlalchemy import create_engine
+
 
 # Load environment variables
 load_dotenv()
 
+# ssl_args = {
+#     'sslmode': 'require',
+#     'sslcert': os.environ.get('SSL_CERT')
+# }
+
+# Construct the SQLAlchemy database URI
+# db_uri = os.environ.get('DATABASE_URI')
+
+# # Combine URI with SSL parameters
+# engine = create_engine(db_uri, connect_args=ssl_args)
+
 app = Flask(__name__)
 swagger = Swagger(app)
+mail = Mail(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres.khqalbapxdbyuuscsdww:w!hSBVH!VF96SR@aws-0-eu-central-1.pooler.supabase.com:6543/postgres' #'sqlite:///app.db'
+
+
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI') #'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = b'Y\xf1Xz\x00\xad|eQ\x80t \xca\x1a\x10K'
 app.json.compact = False
+
+# app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+#     "connect_args": {
+#     'sslmode': 'require',
+#     'sslcert': os.environ.get('SSL_CERT')
+# }
+# }
 
 # Define metadata, instantiate db
 metadata = MetaData(naming_convention={
