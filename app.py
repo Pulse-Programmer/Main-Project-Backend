@@ -4,7 +4,7 @@ from flask_restful import Resource
 from models import User, Jobseeker, Employer, ContactRequest, Payment, Fileupload, JobCategory
 # Local imports
 from config import app, db, api
-# Model imports
+import datetime
 
 
 
@@ -459,8 +459,10 @@ class ContactRequests(Resource):
         '''
         data = request.get_json()
         jobseeker = Jobseeker.query.filter_by(id=data['jobseekerID']).first()
-        employer = Employer.query.filter_by(id=data.get('user_id')).first()
-        new_contact_request = ContactRequest(jobseeker=jobseeker, employer=employer, message=data['message'], status=data['status'], created_at=['date'])
+        employer = Employer.query.filter(Employer.user_id==session.get('user_id')).first()
+        new_contact_request = ContactRequest(jobseeker=jobseeker, employer=employer, message=data['message'])
+        new_contact_request.created_at = datetime.datetime.now()
+        new_contact_request.status = "false"
         db.session.add(new_contact_request)
         db.session.commit()
         return make_response(new_contact_request.to_dict(), 201)
@@ -487,7 +489,7 @@ class ContactRequestById(Resource):
         '''
         if not session.get('user_id'):
             return make_response({"message":"Unauthorized"}, 401)
-        contact_request = ContactRequest.query.filter_by(jobseeker_id=id).first()
+        contact_request = ContactRequest.query.filter_by(id=id).first()
         if not contact_request:
             return make_response({"message":"Contact request not found"}, 404)
         return make_response(contact_request.to_dict(), 200)
