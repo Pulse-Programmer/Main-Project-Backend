@@ -458,17 +458,19 @@ class ContactRequests(Resource):
             description: Returns the created contact request
         '''
         data = request.get_json()
-        jobseeker = Jobseeker.query.filter_by(id=data['jobseekerID']).first()
+        jobseeker = Jobseeker.query.filter_by(id=data.get('jobseekerID')).first()
         employer = Employer.query.filter(Employer.user_id==session.get('user_id')).first()
+        if not jobseeker or not employer:
+            return make_response({"message":"User not found"}, 404)
         new_contact_request = ContactRequest(jobseeker=jobseeker, employer=employer, message=data['message'])
         new_contact_request.created_at = datetime.datetime.now()
         new_contact_request.status = "false"
         db.session.add(new_contact_request)
         db.session.commit()
         msg_title = f"Hey {jobseeker.name}"
-        msg_body = f"New contact request from {employer.name}: {new_contact_request.message}"  #employer.name
+        msg_body = f"New contact request from {employer.company_name}: {new_contact_request.message}"  #employer.name
         sender = "noreply@app.com"
-        msg = Message(subject=msg_title, sender=sender, recipients=[jobseeker.email])  #jobseeker.email
+        msg = Message(subject=msg_title, sender=sender, recipients=[jobseeker.user.email])  #jobseeker.email
         msg.body = msg_body
         mail.send(msg)
         return make_response(new_contact_request.to_dict(), 201)
