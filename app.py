@@ -4,65 +4,36 @@ from flask_restful import Resource
 from models import User, Jobseeker, Employer, ContactRequest, Payment, Fileupload, JobCategory
 # Local imports
 from config import app, db, api
-# Model imports
-from flask import Flask, request, jsonify
+
+
 import requests
-import base64
-import json
+import uuid
 
-app = Flask(__name__)
+headers = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer 0FD5Ekg1UoBC8uj0ItxOqwwvnDhA'
+}
 
-# Replace with your Daraja credentials
-CONSUMER_KEY = "gNlWwGJaw4lghdM2V19o3rRLtkG36NT2IOCzME1a3SWNNXgx"
-CONSUMER_SECRET = "mL6nbaGbYWlg0K6qGbBEx9fZxFXdxklFYzAzWmY3DpslHmx6lXIEBvKan2U496LZ"
-BUSINESS_SHORTCODE = "YOUR_BUSINESS_SHORTCODE"
-PASSWORD = "YOUR_PASSWORD"
+def generate_unique_id():
+    return str(uuid.uuid4())
 
-def generate_access_token():
-    auth_string = f"{CONSUMER_KEY}:{CONSUMER_SECRET}"
-    auth_bytes = auth_string.encode('utf-8')
-    auth_base64 = base64.b64encode(auth_bytes).decode('utf-8')
-    headers = {
-        "Authorization": f"Basic {auth_base64}",
-        "Content-Type": "application/json"
-    }
-    access_token_url = "https://sandbox.safaricom.co.ke/oauth/v1/generate"
-    response = requests.get(access_token_url, headers=headers)
-    access_token = response.json()['access_token']
-    return access_token
+payload = {
+    "OriginatorConversationID": generate_unique_id(),  # Generate a unique ID here
+    "InitiatorName": "testapi",
+    "SecurityCredential": "k3RhADOg+hgE6P963gZlnWWg+mGpGeyVA8LRP+XrvxbhzLfFFF9zLK5BD8jIgShCoNZ5JjhFVS7fOQkhQP64onSiuVPDxdh3e/hB1Vnsifs1KEDp7XHxqyRxoUzYcK1ru0oLRRjXRXX9Ku5mT5pSuf5J3Br1J3B3f2Yz5SOGG2ocfEj4vj+5l4VqJ/DU2o8p4Sw29x3lHzpLiMD6oIbfOQ3/RFj00yxjrUszNNe3lKmzG6msylOFrPDpDfLtc/d75JZQlGR0aVJWPpL5LxwGoUoq6ZPyPZ/w7Lcc20Tw3iKNvaAkCXXIvDqPSaerzg8vFmXxNqYuKnP1ohJ1cJG9rg==",
+    "CommandID": "BusinessPayment",
+    "Amount": 10,
+    "PartyA": 600991,
+    "PartyB": 254708374149,
+    "Remarks": "Test remarks",
+    "QueueTimeOutURL": "https://mydomain.com/b2c/queue",
+    "ResultURL": "https://mydomain.com/b2c/result",
+    "Occasion": "Payment",
+}
 
-def b2c_transaction(phone_number, amount):
-    access_token = generate_access_token()
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/json"
-    }
-    timestamp = "20230404151510"  # Replace with current timestamp
-    request_body = {
-        "BusinessShortCode": BUSINESS_SHORTCODE,
-        "Password": PASSWORD,
-        "Timestamp": timestamp,
-        "TransactionType": "CustomerPayBill",
-        "Amount": amount,
-        "PartyA": phone_number,
-        "PartyB": phone_number,
-        "PhoneNumber": phone_number,
-        "CallBackURL": "https://mydomain.com/b2c/call",  # Replace with your callback URL
-        "AccountReference": "Reference",
-        "Remarks": "Payment",
-        "QueueTimeOutURL": "https://mydomain.com/b2c/queue"  # Replace with your timeout URL
-    }
-    api_url = "https://sandbox.safaricom.co.ke/mpesa/b2c/v3/paymentrequest"
-    response = requests.post(api_url, headers=headers, data=json.dumps(request_body))
-    return response.json()
+response = requests.post('https://sandbox.safaricom.co.ke/mpesa/b2c/v3/paymentrequest', headers=headers, json=payload)
+print(response.text.encode('utf8'))
 
-@app.route('/b2c', methods=['POST'])
-def b2c_endpoint():
-    data = request.get_json()
-    phone_number = data['phone_number']
-    amount = data['amount']
-    response = b2c_transaction(phone_number, amount)
-    return jsonify(response)
 
 
 class Jobseekers(Resource):
