@@ -11,7 +11,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from flask_bcrypt import Bcrypt
 from flasgger import Swagger
-from flask_mail import Mail, Message
+from flask_mail import Mail, Message 
 # from sqlalchemy import create_engine
 
 
@@ -31,6 +31,14 @@ load_dotenv()
 
 app = Flask(__name__)
 swagger = Swagger(app)
+#configuration for flask mailman
+app.config['MAIL_SERVER'] = "smtp.googlemail.com"
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USERNAME'] = "edwardmwangi94@gmail.com"
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASS')
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+
 mail = Mail(app)
 
 
