@@ -416,7 +416,7 @@ class Payments(Resource):
         new_payment = Payment(**data)
         employer = Employer.query.filter(Employer.user_id==session.get('user_id')).first()
         new_payment.employer_id = employer.id
-        new_payment.status = True
+        new_payment.payment_status = True
         employer.pay_to_view = True
         
         db.session.add(new_payment)
