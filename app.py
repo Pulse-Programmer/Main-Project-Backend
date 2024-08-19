@@ -3,8 +3,8 @@ from flask import request, make_response, jsonify, session, render_template
 from flask_restful import Resource
 from models import User, Jobseeker, Employer, ContactRequest, Payment, Fileupload, JobCategory
 # Local imports
-from config import app, db, api
-# Model imports
+from config import app, db, api, Message, mail
+import datetime
 
 
 
@@ -416,7 +416,7 @@ class Payments(Resource):
         new_payment = Payment(**data)
         employer = Employer.query.filter(Employer.user_id==session.get('user_id')).first()
         new_payment.employer_id = employer.id
-        new_payment.status = True
+        new_payment.payment_status = True
         employer.pay_to_view = True
         
         db.session.add(new_payment)
@@ -458,11 +458,21 @@ class ContactRequests(Resource):
             description: Returns the created contact request
         '''
         data = request.get_json()
-        jobseeker = Jobseeker.query.filter_by(id=data['jobseekerID']).first()
-        employer = Employer.query.filter_by(id=data.get('user_id')).first()
-        new_contact_request = ContactRequest(jobseeker=jobseeker, employer=employer, message=data['message'], status=data['status'], created_at=['date'])
+        jobseeker = Jobseeker.query.filter_by(id=data.get('jobseekerID')).first()
+        employer = Employer.query.filter(Employer.user_id==session.get('user_id')).first()
+        if not jobseeker or not employer:
+            return make_response({"message":"User not found"}, 404)
+        new_contact_request = ContactRequest(jobseeker=jobseeker, employer=employer, message=data['message'])
+        new_contact_request.created_at = datetime.datetime.now()
+        new_contact_request.status = "false"
         db.session.add(new_contact_request)
         db.session.commit()
+        msg_title = f"Hey {jobseeker.name}"
+        msg_body = f"New contact request from {employer.company_name}: {new_contact_request.message}"  #employer.name
+        sender = "noreply@app.com"
+        msg = Message(subject=msg_title, sender=sender, recipients=[jobseeker.user.email])  #jobseeker.email
+        msg.body = msg_body
+        mail.send(msg)
         return make_response(new_contact_request.to_dict(), 201)
 
 
@@ -487,7 +497,7 @@ class ContactRequestById(Resource):
         '''
         if not session.get('user_id'):
             return make_response({"message":"Unauthorized"}, 401)
-        contact_request = ContactRequest.query.filter_by(jobseeker_id=id).first()
+        contact_request = ContactRequest.query.filter_by(id=id).first()
         if not contact_request:
             return make_response({"message":"Contact request not found"}, 404)
         return make_response(contact_request.to_dict(), 200)

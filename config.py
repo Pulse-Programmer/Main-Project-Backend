@@ -1,6 +1,7 @@
 # Standard library imports
-from dotenv import load_dotenv
+
 import os
+from dotenv import load_dotenv
 # Remote library imports
 from flask import Flask
 from flask_cors import CORS
@@ -10,7 +11,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from flask_bcrypt import Bcrypt
 from flasgger import Swagger
-from flask_mail import Mail, Message
+from flask_mail import Mail, Message 
 # from sqlalchemy import create_engine
 
 
@@ -30,11 +31,19 @@ load_dotenv()
 
 app = Flask(__name__)
 swagger = Swagger(app)
+#configuration for flask mailman
+app.config['MAIL_SERVER'] = "smtp.googlemail.com"
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USERNAME'] = "edwardmwangi94@gmail.com"
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASS')
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+
 mail = Mail(app)
 
 
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres.khqalbapxdbyuuscsdww:w!hSBVH!VF96SR@aws-0-eu-central-1.pooler.supabase.com:6543/postgres'#os.getenv('DATABASE_URI') #'sqlite:///app.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URI')#os.getenv('DATABASE_URI') #'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = b'Y\xf1Xz\x00\xad|eQ\x80t \xca\x1a\x10K'
 app.json.compact = False

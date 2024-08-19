@@ -13,6 +13,7 @@ Flask==2.2.5
 Flask-Bcrypt==1.0.1
 Flask-Cors==4.0.1
 Flask-Mail==0.10.0
+Flask-Mailman==1.1.1
 Flask-Migrate==4.0.7
 Flask-RESTful==0.3.10
 Flask-SQLAlchemy==3.0.3
