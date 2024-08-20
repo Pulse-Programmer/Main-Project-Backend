@@ -5,6 +5,7 @@ from models import User, Jobseeker, Employer, ContactRequest, Payment, Fileuploa
 # Local imports
 from config import app, db, api, Message, mail
 import datetime
+from flask import flash
 
 
 
@@ -421,6 +422,16 @@ class Payments(Resource):
         
         db.session.add(new_payment)
         db.session.commit()
+        msg_title = f"Hey {employer.user.username}"
+        msg_body = f"We received your payment of {new_payment.amount} for {employer.company_name}"  #employer.name
+        # sender = "noreply@gmail.com"
+        msg = Message(subject=msg_title, recipients=[employer.user.email])  #jobseeker.email
+        msg.body = msg_body
+        try:
+            mail.send(msg)
+            print("Mail sent successfully!")
+        except Exception as e:
+            flash(f"Failed to send mail: {str(e)}", 'error')
         return make_response(new_payment.to_dict(), 201)
     
 api.add_resource(Payments, "/payments", endpoint='payments')
@@ -469,10 +480,14 @@ class ContactRequests(Resource):
         db.session.commit()
         msg_title = f"Hey {jobseeker.name}"
         msg_body = f"New contact request from {employer.company_name}: {new_contact_request.message}"  #employer.name
-        sender = "noreply@app.com"
-        msg = Message(subject=msg_title, sender=sender, recipients=[jobseeker.user.email])  #jobseeker.email
+        # sender = "noreply@app.com"
+        msg = Message(subject=msg_title, recipients=[jobseeker.user.email])  #jobseeker.email
         msg.body = msg_body
-        mail.send(msg)
+        try:
+            mail.send(msg)
+            print("Mail sent successfully!")
+        except Exception as e:
+            flash(f"Failed to send mail: {str(e)}", 'error')
         return make_response(new_contact_request.to_dict(), 201)
 
 
