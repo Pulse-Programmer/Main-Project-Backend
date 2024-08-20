@@ -34,10 +34,13 @@ swagger = Swagger(app)
 #configuration for flask mailman
 app.config['MAIL_SERVER'] = "smtp.googlemail.com"
 app.config['MAIL_PORT'] = 587
-app.config['MAIL_USERNAME'] = "edwardmwangi94@gmail.com"
-app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASS')
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_USERNAME'] = "edwardmwangi94@gmail.com"  #Your email address
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASS')  #Your email password
+app.config['MAIL_USE_TLS'] = True  # Use TLS
+app.config['MAIL_USE_SSL'] = False   #Not using SSL
+app.config['MAIL_DEFAULT_SENDER'] = "edwardmwangi94@gmail.com"  # Default sender
+app.config['MAIL_MAX_EMAILS'] = None
+app.config['MAIL_ASCII_ATTACHMENTS'] = False
 
 mail = Mail(app)
 
