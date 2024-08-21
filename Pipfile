@@ -23,6 +23,7 @@ psycopg2-binary = "*"
 flasgger = "*"
 flask-mail = "*"
 flask-mailman = "*"
+flask-jwt-extended = "*"
 
 [dev-packages]
 
