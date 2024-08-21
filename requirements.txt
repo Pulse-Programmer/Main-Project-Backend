@@ -7,11 +7,12 @@ blinker==1.8.2
 click==8.1.7
 decorator==5.1.1
 executing==2.0.1
-Faker==27.0.0
+Faker==27.4.0
 flasgger==0.9.7.1
 Flask==2.2.5
 Flask-Bcrypt==1.0.1
 Flask-Cors==4.0.1
+Flask-JWT-Extended==4.6.0
 Flask-Mail==0.10.0
 Flask-Mailman==1.1.1
 Flask-Migrate==4.0.7
@@ -41,6 +42,7 @@ psycopg2-binary==2.9.9
 ptyprocess==0.7.0
 pure_eval==0.2.3
 Pygments==2.18.0
+PyJWT==2.9.0
 pytest==7.2.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
