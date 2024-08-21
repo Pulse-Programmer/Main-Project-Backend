@@ -6,10 +6,25 @@ from models import User, Jobseeker, Employer, ContactRequest, Payment, Fileuploa
 from config import app, db, api, Message, mail
 import datetime
 from flask import flash
+from flask_jwt_extended import create_access_token, get_jwt_identity, current_user, jwt_required, JWTManager
 
+
+app.config["JWT_SECRET_KEY"] = "b'Y\xf1Xz\x01\xad|eQ\x80t \xca\x1a\x10K'"  
+app.config['JWT_TOKEN_LOCATION'] = ['headers']
+jwt = JWTManager(app)
+
+@jwt.user_identity_loader
+def user_identity_lookup(user):
+    return user
+
+@jwt.user_lookup_loader
+def user_lookup_callback(_jwt_header, jwt_data):
+    identity = jwt_data["sub"]
+    return User.query.filter_by(id=identity).one_or_none()
 
 
 class Jobseekers(Resource):
+    @jwt_required()
     def get(self):
         #Swagger annotations
         '''This is an endpoint that gets all jobseekers
@@ -20,18 +35,19 @@ class Jobseekers(Resource):
           200:
             description: Returns all jobseekers
         '''
-        if not session.get('user_id'):
+        user = User.query.filter_by(id = current_user.id).first()
+        if not user:
             return make_response({"message":"Unauthorized"}, 401)
-        if session['role']=='employer' or session['role']=='admin':
-            if session['role']=='employer':
-                employer = Employer.query.filter(Employer.user_id == session['user_id']).first()
+        if user.role=='employer' or user.role=='admin':
+            if user.role=='employer':
+                employer = Employer.query.filter(Employer.user_id == user.id).first()
                 if not employer.pay_to_view:
                     return make_response({"message": "Pay fee to have access!"}, 401)
             jobseekers = Jobseeker.query.all()
             return make_response([jobseeker.to_dict() for jobseeker in jobseekers], 200)
         else:
             return make_response({"message":"You don't have access!"}, 401)
-        
+    @jwt_required()
     def post(self):
         #Swagger annotations
         '''This is an endpoint that creates a new jobseeker
@@ -51,12 +67,13 @@ class Jobseekers(Resource):
     
         data = request.get_json()
         new_jobseeker = Jobseeker(**data)
-        new_jobseeker.user_id = session['user_id']
+        new_jobseeker.user_id = current_user.id
         db.session.add(new_jobseeker)
         db.session.commit()
         return make_response(new_jobseeker.to_dict(), 201)
     
 class JobseekerById(Resource):
+    @jwt_required()
     def get(self, id):
         #Swagger annotations
         '''This is an endpoint that gets a jobseeker by ID
@@ -73,7 +90,7 @@ class JobseekerById(Resource):
           200:
             description: Returns the jobseeker
         '''
-        if not session.get('user_id'):
+        if not current_user:
             return make_response({"message":"Unauthorized"}, 401)
         jobseeker = Jobseeker.query.filter(Jobseeker.user_id == id).first()
         if not jobseeker:
@@ -146,6 +163,7 @@ api.add_resource(Jobseekers, '/jobseekers', endpoint='jobseekers')
 api.add_resource(JobseekerById, '/jobseekers/<int:id>', endpoint='jobseeker_by_id')
 
 class Employers(Resource):
+    @jwt_required()
     def get(self):
         #Swagger annotations
         '''This is an endpoint that gets all employers
@@ -156,11 +174,11 @@ class Employers(Resource):
           200:
             description: Returns all employers
         '''
-        if not session.get('user_id') or not session['role']=='admin':
+        if not current_user or not current_user.role=='admin':
             return make_response({"message":"Unauthorized"}, 401)
         employers = Employer.query.all()
         return make_response([employer.to_dict() for employer in employers], 200)
-    
+    @jwt_required()
     def post(self):
         #Swagger annotations
         '''This is an endpoint that creates a new employer
@@ -179,7 +197,7 @@ class Employers(Resource):
         '''
         data = request.get_json()
         new_employer = Employer(**data)
-        new_employer.user_id = session['user_id']
+        new_employer.user_id = current_user.id
         db.session.add(new_employer)
         db.session.commit()
         return make_response(new_employer.to_dict(), 201)
@@ -187,6 +205,7 @@ class Employers(Resource):
 api.add_resource(Employers, '/employers', endpoint='employers')
     
 class EmployerById(Resource):
+    @jwt_required()
     def get(self, id):
         #Swagger annotations
         '''This is an endpoint that gets an employer by ID
@@ -203,7 +222,7 @@ class EmployerById(Resource):
           200:
             description: Returns the employer
         '''
-        if not session.get('user_id'):
+        if not current_user:
             return make_response({"message":"Unauthorized"}, 401)
         employer = Employer.query.filter(Employer.user_id==id).first()
         if not employer:
@@ -274,6 +293,7 @@ class EmployerById(Resource):
 api.add_resource(EmployerById, '/employers/<int:id>', endpoint='employer_by_id')
 
 class Users(Resource):
+    @jwt_required()
     def get(self):
         #Swagger annotations
         '''This is an endpoint that gets all users
@@ -284,12 +304,13 @@ class Users(Resource):
           200:
             description: Returns all users
         '''
-        if not session.get('user_id') or not session['role']=='admin':
+        if not current_user.id or not current_user.role=='admin':
             return make_response({"message":"Unauthorized"}, 401)
         users = User.query.all()
         return make_response([user.to_dict() for user in users], 200)
     
 class UsersById(Resource):
+    @jwt_required()
     def get(self, id):
         #Swagger annotations
         '''This is an endpoint that gets a user by ID
@@ -306,13 +327,14 @@ class UsersById(Resource):
           200:
             description: Returns the user
         '''
-        if not session.get('user_id'):
+        if not current_user.id:
             return make_response({"message":"Unauthorized"}, 401)
         user = User.query.filter_by(id=id).first()
         if not user:
             return make_response({"message":"User not found"}, 404)
         return make_response(user.to_dict(), 200)
     
+    @jwt_required()
     def patch(self, id):
         #Swagger annotations
         '''This is an endpoint that updates a user by ID
@@ -334,7 +356,7 @@ class UsersById(Resource):
           200:
             description: Returns the updated user
         '''
-        if not session.get('user_id'):
+        if not current_user:
             return make_response({"message":"Unauthorized"}, 401)
         data = request.get_json()
         user = User.query.filter_by(id=id).first()
@@ -350,6 +372,7 @@ class UsersById(Resource):
         
         return make_response(user.to_dict(), 200)
     
+    @jwt_required()
     def delete(self, id):
         #Swagger annotations
         '''This is an endpoint that deletes a user by ID
@@ -366,7 +389,7 @@ class UsersById(Resource):
           200:
             description: Returns nothing
         '''
-        if not session.get('user_id'):
+        if not current_user.id:
             return make_response({"message":"Unauthorized"}, 401)
         user = User.query.filter_by(id=id).first()
         
@@ -382,6 +405,7 @@ api.add_resource(Users, '/users', endpoint='users')
 api.add_resource(UsersById, '/users/<int:id>', endpoint='user_by_id')
 
 class Payments(Resource):
+    @jwt_required()
     def get(self):
         #Swagger annotations
         '''This is an endpoint that gets all payments
@@ -392,11 +416,12 @@ class Payments(Resource):
           200:
             description: Returns all payments
         '''
-        if not session.get('user_id'): #or not session['role']=='admin'
+        if not current_user: #or not session['role']=='admin'
             return make_response({"message":"Unauthorized"}, 401)
         payments = Payment.query.all()
         return make_response([payment.to_dict() for payment in payments], 200)
     
+    @jwt_required()
     def post(self):
         #Swagger annotations
         '''This is an endpoint that creates a new payment
@@ -415,7 +440,7 @@ class Payments(Resource):
         '''
         data = request.get_json()
         new_payment = Payment(**data)
-        employer = Employer.query.filter(Employer.user_id==session.get('user_id')).first()
+        employer = Employer.query.filter(Employer.user_id==current_user.id).first()
         new_payment.employer_id = employer.id
         new_payment.payment_status = True
         employer.pay_to_view = True
@@ -437,6 +462,7 @@ class Payments(Resource):
 api.add_resource(Payments, "/payments", endpoint='payments')
 
 class ContactRequests(Resource):
+    @jwt_required()
     def get(self):
         #Swagger annotations
         '''This is an endpoint that gets all contact requests
@@ -447,11 +473,12 @@ class ContactRequests(Resource):
           200:
             description: Returns all contact requests
         '''
-        if not session.get('user_id') or not session['role']=='admin':
+        if not current_user or not current_user.role=='admin':
             return make_response({"message":"Unauthorized"}, 401)
         contact_requests = ContactRequest.query.all()
         return make_response([contact_request.to_dict() for contact_request in contact_requests], 200)
     
+    @jwt_required()
     def post(self):
         #Swagger annotations
         '''This is an endpoint that creates a new contact request
@@ -470,7 +497,7 @@ class ContactRequests(Resource):
         '''
         data = request.get_json()
         jobseeker = Jobseeker.query.filter_by(id=data.get('jobseekerID')).first()
-        employer = Employer.query.filter(Employer.user_id==session.get('user_id')).first()
+        employer = Employer.query.filter(Employer.user_id==current_user.id).first()
         if not jobseeker or not employer:
             return make_response({"message":"User not found"}, 404)
         new_contact_request = ContactRequest(jobseeker=jobseeker, employer=employer, message=data['message'])
@@ -494,6 +521,7 @@ class ContactRequests(Resource):
 api.add_resource(ContactRequests, "/contact_requests", endpoint='contact_requests')
 
 class ContactRequestById(Resource):
+    @jwt_required()
     def get(self, id):
         #Swagger annotations
         '''This is an endpoint that gets a contact request by ID
@@ -510,13 +538,14 @@ class ContactRequestById(Resource):
           200:
             description: Returns the contact request
         '''
-        if not session.get('user_id'):
+        if not current_user:
             return make_response({"message":"Unauthorized"}, 401)
         contact_request = ContactRequest.query.filter_by(id=id).first()
         if not contact_request:
             return make_response({"message":"Contact request not found"}, 404)
         return make_response(contact_request.to_dict(), 200)
     
+    @jwt_required()
     def patch(self, id):
         #Swagger annotations
         '''This is an endpoint that updates a contact request by ID
@@ -538,7 +567,7 @@ class ContactRequestById(Resource):
           200:
             description: Returns the updated contact request
         '''
-        if not session.get('user_id'):
+        if not current_user:
             return make_response({"message":"Unauthorized"}, 401)
         
         data = request.get_json()
@@ -555,6 +584,7 @@ class ContactRequestById(Resource):
         
         return make_response(contact_request.to_dict(), 200)
     
+    @jwt_required()
     def delete(self, id):
         #Swagger annotations
         '''This is an endpoint that deletes a contact request by ID
@@ -571,7 +601,7 @@ class ContactRequestById(Resource):
           200:
             description: Returns nothing
         '''
-        if not session.get('user_id'):
+        if not current_user:
             return make_response({"message":"Unauthorized"}, 401)
         
         contact_request = ContactRequest.query.filter_by(id=id).first()
@@ -610,23 +640,16 @@ class Signup(Resource):
         db.session.add(user)
         db.session.commit()
         
-        session['user_id'] = user.id
-        session['role'] = user.role
+        access_token = create_access_token(identity=user.id)
+
+        return make_response({"user":user.to_dict(rules=('-_password_hash',)),'access_token': access_token},201)
         
-        response_body = user.to_dict(rules=('-_password_hash',))
-        
-        return make_response(response_body, 201)
 
 class CheckSession(Resource):
+    @jwt_required()
     def get(self):
-        if not session.get('user_id'):
-            return make_response({"message":"Unauthorized"}, 401)
-        
-        user = User.query.get(session.get('user_id'))
-        
-        response_body = user.to_dict(rules=('-_password_hash',))
-        
-        return make_response(response_body, 200)
+        # We can now access our sqlalchemy User object via `current_user`
+        return make_response(current_user.to_dict(),200)
     
 class Login(Resource):
     def post(self):
@@ -643,12 +666,14 @@ class Login(Resource):
         if not user or not user.authenticate(password):
             return make_response({"message":"Invalid credentials"}, 401)
         
-        session['user_id'] = user.id
-        session['role'] = user.role
-        
-        response_body = user.to_dict(rules=('-_password_hash',))
-        
-        return make_response(response_body, 200)
+        else:
+          access_token = create_access_token(identity=user.id)
+          
+          response_body = make_response({"user":user.to_dict(rules=('-_password_hash',)),"access_token":access_token},201)     
+          
+          return response_body
+          
+          
     
 class Logout(Resource):
     def delete(self):

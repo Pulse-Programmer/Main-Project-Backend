@@ -32,8 +32,8 @@ load_dotenv()
 app = Flask(__name__)
 swagger = Swagger(app)
 #session cookies configuration
-app.config['SESSION_COOKIE_SAMESITE'] = 'None'
-app.config['SESSION_COOKIE_SECURE'] = True
+# app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+# app.config['SESSION_COOKIE_SECURE'] = True
 
 #configuration for flask mailman
 app.config['MAIL_SERVER'] = "smtp.googlemail.com"
@@ -77,4 +77,4 @@ bcrypt = Bcrypt(app)
 api = Api(app)
 
 # Instantiate CORS
-CORS(app, supports_credentials=True)
+CORS(app)  #resources={r"/*": {"origins": "http://localhost:3000"}}
